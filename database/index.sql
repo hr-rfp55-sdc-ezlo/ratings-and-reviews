@@ -99,8 +99,15 @@ copy reviews_photos from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-a
 -- Foreign Keys
 -- ---
 
-ALTER TABLE `reviews` ADD FOREIGN KEY (id) REFERENCES `review-characteristics` (`review_id`);
-ALTER TABLE `reviews` ADD FOREIGN KEY (id) REFERENCES `review-photos` (`review_id`);
+-- ALTER TABLE `reviews` ADD FOREIGN KEY (id) REFERENCES `review-characteristics` (`review_id`);
+ALTER TABLE reviews ADD CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id);
+ALTER TABLE characteristics ADD CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id);
+ALTER TABLE characteristic_reviews ADD CONSTRAINT fk_characteristic FOREIGN KEY (characteristic_id) REFERENCES characteristics (id);
+ALTER TABLE characteristic_reviews ADD CONSTRAINT fk_review FOREIGN KEY (review_id) REFERENCES reviews (id);
+ALTER TABLE reviews_photos ADD CONSTRAINT fk_review FOREIGN KEY (review_id) REFERENCES reviews (id);
+
+
+-- ALTER TABLE `reviews` ADD FOREIGN KEY (id) REFERENCES `review-photos` (`review_id`);
 
 -- ---
 -- Table Properties
@@ -109,6 +116,12 @@ ALTER TABLE `reviews` ADD FOREIGN KEY (id) REFERENCES `review-photos` (`review_i
 -- ALTER TABLE `reviews` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 -- ALTER TABLE `review-characteristics` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 -- ALTER TABLE `review-photos` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+ALTER TABLE reviews SET LOGGED;
+ALTER TABLE products SET LOGGED;
+ALTER TABLE characteristics SET LOGGED;
+ALTER TABLE characteristic_reviews SET LOGGED;
+ALTER TABLE review_photos SET LOGGED;
 
 -- ---
 -- Test Data

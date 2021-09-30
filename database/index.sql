@@ -126,3 +126,8 @@ ALTER TABLE products SET LOGGED;
 ALTER TABLE characteristics SET LOGGED;
 ALTER TABLE characteristic_reviews SET LOGGED;
 ALTER TABLE review_photos SET LOGGED;
+
+
+-- missing line 1 somehow
+
+INSERT INTO products values (1, 'Camo Onesie', 'Blend in to your crowd', 'The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.', 'Jackets', 140);

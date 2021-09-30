@@ -96,6 +96,16 @@ CREATE TABLE reviews_photos (
 copy reviews_photos from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/reviews_photos.csv' with delimiter ',';
 
 -- ---
+-- Table Properties
+-- ---
+
+ALTER TABLE reviews SET LOGGED;
+ALTER TABLE products SET LOGGED;
+ALTER TABLE characteristics SET LOGGED;
+ALTER TABLE characteristic_reviews SET LOGGED;
+ALTER TABLE review_photos SET LOGGED;
+
+-- ---
 -- Primary Keys
 -- ---
 
@@ -116,16 +126,6 @@ ALTER TABLE characteristic_reviews ADD CONSTRAINT fk_characteristic FOREIGN KEY 
 ALTER TABLE characteristic_reviews ADD CONSTRAINT fk_review FOREIGN KEY (review_id) REFERENCES reviews (id);
 ALTER TABLE reviews_photos ADD CONSTRAINT fk_review FOREIGN KEY (review_id) REFERENCES reviews (id);
 
-
--- ---
--- Table Properties
--- ---
-
-ALTER TABLE reviews SET LOGGED;
-ALTER TABLE products SET LOGGED;
-ALTER TABLE characteristics SET LOGGED;
-ALTER TABLE characteristic_reviews SET LOGGED;
-ALTER TABLE review_photos SET LOGGED;
 
 
 -- missing line 1 somehow

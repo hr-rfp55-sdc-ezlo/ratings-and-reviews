@@ -96,10 +96,20 @@ CREATE TABLE reviews_photos (
 copy reviews_photos from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/reviews_photos.csv' with delimiter ',';
 
 -- ---
+-- Primary Keys
+-- ---
+
+ALTER TABLE reviews ADD PRIMARY KEY (id);
+ALTER TABLE products ADD PRIMARY KEY (id);
+ALTER TABLE characteristics ADD PRIMARY KEY (id);
+ALTER TABLE reviews_photos ADD PRIMARY KEY (id);
+ALTER TABLE characteristic_reviews ADD PRIMARY KEY (id);
+
+
+-- ---
 -- Foreign Keys
 -- ---
 
--- ALTER TABLE `reviews` ADD FOREIGN KEY (id) REFERENCES `review-characteristics` (`review_id`);
 ALTER TABLE reviews ADD CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id);
 ALTER TABLE characteristics ADD CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id);
 ALTER TABLE characteristic_reviews ADD CONSTRAINT fk_characteristic FOREIGN KEY (characteristic_id) REFERENCES characteristics (id);
@@ -107,29 +117,12 @@ ALTER TABLE characteristic_reviews ADD CONSTRAINT fk_review FOREIGN KEY (review_
 ALTER TABLE reviews_photos ADD CONSTRAINT fk_review FOREIGN KEY (review_id) REFERENCES reviews (id);
 
 
--- ALTER TABLE `reviews` ADD FOREIGN KEY (id) REFERENCES `review-photos` (`review_id`);
-
 -- ---
 -- Table Properties
 -- ---
-
--- ALTER TABLE `reviews` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `review-characteristics` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `review-photos` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 ALTER TABLE reviews SET LOGGED;
 ALTER TABLE products SET LOGGED;
 ALTER TABLE characteristics SET LOGGED;
 ALTER TABLE characteristic_reviews SET LOGGED;
 ALTER TABLE review_photos SET LOGGED;
-
--- ---
--- Test Data
--- ---
-
--- INSERT INTO `reviews` (`id`,`product_id`,`rating`,`summary`,`recommend`,`response`,`body`,`date`,`reviewer_name`,`email`,`helpfulness`,`photos`,`reported`) VALUES
--- ('','','','','','','','','','','','','');
--- INSERT INTO `review-characteristics` (`id`,`characteristic`,`score`,`review_id`) VALUES
--- ('','','','');
--- INSERT INTO `review-photos` (`id`,`url`,`review_id`) VALUES
--- ('','','');

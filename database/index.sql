@@ -46,7 +46,7 @@ CREATE TABLE products (
   default_price integer
 );
 
-copy products (id, name, slogan, description, category, default_price) from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/product.csv' with delimiter ',';
+copy products (id, name, slogan, description, category, default_price) from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/product.csv' csv header quote '"';
 
 -- ---
 -- Table 'characteristics'
@@ -55,11 +55,13 @@ copy products (id, name, slogan, description, category, default_price) from '/Us
 
 -- DROP TABLE IF EXISTS characteristics;
 
--- CREATE TABLE characteristics (
---   id integer,
---   product_id integer,
---   name VARCHAR(9)
--- );
+CREATE TABLE characteristics (
+  id integer,
+  product_id integer,
+  name VARCHAR(9)
+);
+
+copy characteristics (id, product_id, name) from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/characteristics.csv' with delimiter ',';
 
 -- ---
 -- Table 'characteristic-reviews'
@@ -68,12 +70,15 @@ copy products (id, name, slogan, description, category, default_price) from '/Us
 
 -- DROP TABLE IF EXISTS characteristic-reviews;
 
--- CREATE TABLE characteristic_reviews (
---   id integer,
---   characteristic_id integer,
---   review_id integer,
---   value integer
--- );
+CREATE TABLE characteristic_reviews (
+  id integer,
+  characteristic_id integer,
+  review_id integer,
+  value integer
+);
+
+copy characteristic_reviews from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/characteristic_reviews.csv' with delimiter ',';
+
 
 -- ---
 -- Table 'review-photos'
@@ -82,13 +87,13 @@ copy products (id, name, slogan, description, category, default_price) from '/Us
 
 -- DROP TABLE IF EXISTS reviews-photos;
 
--- CREATE TABLE reviews_photos (
---   id INTEGER,
---   review_id INTEGER,
---   url text
--- );
+CREATE TABLE reviews_photos (
+  id INTEGER,
+  review_id INTEGER,
+  url text
+);
 
--- copy reviews_photos from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/reviews_photos.csv' with delimiter ',';
+copy reviews_photos from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/reviews_photos.csv' with delimiter ',';
 
 -- ---
 -- Foreign Keys
@@ -101,9 +106,9 @@ ALTER TABLE `reviews` ADD FOREIGN KEY (id) REFERENCES `review-photos` (`review_i
 -- Table Properties
 -- ---
 
-ALTER TABLE `reviews` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-ALTER TABLE `review-characteristics` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-ALTER TABLE `review-photos` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+-- ALTER TABLE `reviews` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+-- ALTER TABLE `review-characteristics` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+-- ALTER TABLE `review-photos` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- ---
 -- Test Data

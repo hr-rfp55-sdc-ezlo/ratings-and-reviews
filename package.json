@@ -1,0 +1,32 @@
+{
+  "name": "ratings-and-reviews",
+  "version": "1.0.0",
+  "description": "SDC API for ratings and reviews",
+  "main": "index.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.13",
+    "path": "^0.12.7",
+    "pg": "^8.7.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "nodemon server/index.js",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hr-rfp55-sdc-ezlo/ratings-and-reviews.git"
+  },
+  "keywords": [
+    "SDC",
+    "reviews"
+  ],
+  "author": "Derek Samms",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hr-rfp55-sdc-ezlo/ratings-and-reviews/issues"
+  },
+  "homepage": "https://github.com/hr-rfp55-sdc-ezlo/ratings-and-reviews#readme"
+}

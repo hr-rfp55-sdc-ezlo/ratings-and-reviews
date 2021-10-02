@@ -10,7 +10,7 @@ SET FOREIGN_KEY_CHECKS=0;
 --
 -- ---
 
-DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS reviews CASCADE;
 
 CREATE TABLE reviews (
   id INTEGER,
@@ -27,8 +27,9 @@ CREATE TABLE reviews (
   helpfulness smallint
 );
 
-copy reviews from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/reviews.csv' with delimiter ',';
+ALTER TABLE reviews SET UNLOGGED;
 
+copy reviews from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/reviews.csv' csv header quote '"';
 
 -- ---
 -- Table 'products'
@@ -46,6 +47,8 @@ CREATE TABLE products (
   default_price integer
 );
 
+ALTER TABLE products SET UNLOGGED;
+
 copy products (id, name, slogan, description, category, default_price) from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/product.csv' csv header quote '"';
 
 -- ---
@@ -53,7 +56,7 @@ copy products (id, name, slogan, description, category, default_price) from '/Us
 --
 -- ---
 
--- DROP TABLE IF EXISTS characteristics;
+DROP TABLE IF EXISTS characteristics CASCADE;
 
 CREATE TABLE characteristics (
   id integer,
@@ -61,14 +64,16 @@ CREATE TABLE characteristics (
   name VARCHAR(9)
 );
 
-copy characteristics (id, product_id, name) from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/characteristics.csv' with delimiter ',';
+ALTER TABLE characteristics SET UNLOGGED;
+
+copy characteristics (id, product_id, name) from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/characteristics.csv' csv header quote '"';
 
 -- ---
 -- Table 'characteristic-reviews'
 --
 -- ---
 
--- DROP TABLE IF EXISTS characteristic-reviews;
+DROP TABLE IF EXISTS characteristic_reviews;
 
 CREATE TABLE characteristic_reviews (
   id integer,
@@ -77,7 +82,9 @@ CREATE TABLE characteristic_reviews (
   value integer
 );
 
-copy characteristic_reviews from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/characteristic_reviews.csv' with delimiter ',';
+ALTER TABLE characteristic_reviews SET UNLOGGED;
+
+copy characteristic_reviews from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/characteristic_reviews.csv' csv header quote '"';
 
 
 -- ---
@@ -85,7 +92,7 @@ copy characteristic_reviews from '/Users/derek/Documents/Hack Reactor/Work/SDC/r
 --
 -- ---
 
--- DROP TABLE IF EXISTS reviews-photos;
+DROP TABLE IF EXISTS reviews_photos;
 
 CREATE TABLE reviews_photos (
   id INTEGER,
@@ -93,7 +100,9 @@ CREATE TABLE reviews_photos (
   url text
 );
 
-copy reviews_photos from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/reviews_photos.csv' with delimiter ',';
+ALTER TABLE reviews_photos SET UNLOGGED;
+
+copy reviews_photos from '/Users/derek/Documents/Hack Reactor/Work/SDC/ratings-and-reviews/data/reviews_photos.csv' csv header quote '"';
 
 -- ---
 -- Table Properties
@@ -103,7 +112,7 @@ ALTER TABLE reviews SET LOGGED;
 ALTER TABLE products SET LOGGED;
 ALTER TABLE characteristics SET LOGGED;
 ALTER TABLE characteristic_reviews SET LOGGED;
-ALTER TABLE review_photos SET LOGGED;
+ALTER TABLE reviews_photos SET LOGGED;
 
 -- ---
 -- Primary Keys
@@ -126,6 +135,13 @@ ALTER TABLE characteristic_reviews ADD CONSTRAINT fk_characteristic FOREIGN KEY 
 ALTER TABLE characteristic_reviews ADD CONSTRAINT fk_review FOREIGN KEY (review_id) REFERENCES reviews (id);
 ALTER TABLE reviews_photos ADD CONSTRAINT fk_review FOREIGN KEY (review_id) REFERENCES reviews (id);
 
+-- Indexes
+
+CREATE INDEX idx_reviews_prod ON reviews (product_id);
+CREATE INDEX idx_characteristics_prod ON characteristics (product_id);
+CREATE INDEX idx_charrev_rev ON characteristic_reviews (review_id);
+CREATE INDEX idx_charrev_char ON characteristic_reviews (characteristic_id);
+CREATE INDEX idx_photos_rev ON reviews_photos (review_id);
 
 
 -- missing line 1 somehow

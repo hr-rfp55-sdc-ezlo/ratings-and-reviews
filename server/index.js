@@ -25,43 +25,75 @@ router.get('/reviews/:product_id', (req, res) => {
       res.send(response.data);
     })
     .catch((err) => res.send(err));
-});
-
-app.get('/reviews', (req, res) => {
-  ratings.getReviews(req.query, (err, data) => {
-    if (err) {
-      console.log('Error app.get /reviews/ : ' + err);
-      res.status(404).send(err);
-    } else {
-      res.status(200).send(data);
-    }
   });
-})
-*/
+
+  app.get('/reviews', (req, res) => {
+    ratings.getReviews(req.query, (err, data) => {
+      if (err) {
+        console.log('Error app.get /reviews/ : ' + err);
+        res.status(404).send(err);
+      } else {
+        res.status(200).send(data);
+      }
+    });
+  })
+  */
 
 app.get('/reviews', (req, res) => {
+   var params = {
+     product_id: req.query.product_id,
+     sort: req.query.sort || 'helpfulness',
+     count: req.query.count || 10,
+     page: req.query.page || 0,
+    };
+    console.log('GET request received:', req.query);
+    console.log('params:', params);
+
+    pg.getReviews(params, (err, data) => {
+      if (err) {
+        console.log('Error getting reviews from db:' + err);
+        res.status(404).send(err);
+      } else {
+        console.log(data);
+        res.status(200).json(data);
+      }
+    });
+})
+
+  //GET review metadata
+    //takes in product id
+  /* user server code:
+  router.get('/reviews/meta/:product_id', (req, res) => {
+    axios.get(`https://app-hrsei-api.herokuapp.com/api/fec2/hr-rfp/reviews/meta/?sort=newest&product_id=${req.params.product_id}&count=100`, {
+      headers: { Authorization: authToken },
+    })
+    .then((response) => {
+      res.send(response.data);
+    })
+    .catch((err) => res.send(err));
+  });
+  */
+
+app.get('/reviews/meta', (req, res) => {
   var params = {
-    product_id: req.query.product_id,
-    sort: req.query.sort || 'helpfulness',
-    count: req.query.count || 2,
-    page: req.query.page || 0,
-  };
-  console.log('GET request received:', req.query);
-  console.log('params:', params);
+    product_id: req.query.product_id
+    };
+    console.log('GET meta req recd:', req.query);
+    console.log('params:', params);
 
-  pg.getReviews(params, (err, data) => {
-    if (err) {
-      console.log('Error getting reviews from db:' + err);
-      res.status(404).send(err);
-    } else {
-      console.log(data);
-      res.status(200).json(data);
-    }
-  });
-
+    pg.getMeta(params, (err, data) => {
+      if (err) {
+        console.log('Error getting metadata from db:' + err);
+        res.status(404).send(err);
+      } else {
+        console.log(data);
+        res.status(200).json(data);
+      }
+    });
 })
 
-//PUT to mark review as helpful
+
+  //PUT to mark review as helpful
   //takes review ID
 /* user server code (for QA, no such code for reviews):
 router.put('/qa/questions/helpful/:question_id', (req, res) => {
@@ -90,21 +122,6 @@ app.put('/reviews/:review_id/helpful', (req, res) => {
   });
 })
 
-//GET review metadata
-  //takes in product id
-/* user server code:
-router.get('/reviews/meta/:product_id', (req, res) => {
-  axios.get(`https://app-hrsei-api.herokuapp.com/api/fec2/hr-rfp/reviews/meta/?sort=newest&product_id=${req.params.product_id}&count=100`, {
-    headers: { Authorization: authToken },
-  })
-  .then((response) => {
-    res.send(response.data);
-  })
-  .catch((err) => res.send(err));
-});
-*/
-
-// app.get('/reviews/meta') //READ UP ON QUERIES
 
 
 
@@ -130,8 +147,33 @@ router.post('/reviews', (req, res) => {
     });
 });
 */
-// app.post()
+app.post('/reviews', (req, res) => {
+  var date = new Date();
+  var params = {
+    product_id: req.query.product_id,
+    rating: req.query.rating,
+    date: date.valueOf(),
+    summary: req.query.summary,
+    body: req.query.body,
+    recommend: req.query.recommend,
+    reviewer_name: req.query.reviewer_name,
+    email: req.query.email,
+    photos: req.query.photos,
+    characteristics: req.query.characteristics
+   };
+   console.log('POST request received:', req.query);
+   console.log('params:', params);
 
+   pg.postReview(params, (err, data) => {
+     if (err) {
+       console.log('Error posting reviews to db:' + err);
+       res.status(404).send(err);
+     } else {
+       console.log(data);
+       res.status(200).json(data);
+     }
+   });
+})
 
 
 

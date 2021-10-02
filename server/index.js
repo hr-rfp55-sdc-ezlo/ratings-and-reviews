@@ -41,7 +41,7 @@ app.get('/reviews', (req, res) => {
 
 app.get('/reviews', (req, res) => {
   var params = {
-    product_id: req.query.product,
+    product_id: req.query.product_id,
     sort: req.query.sort || 'helpfulness',
     count: req.query.count || 2,
     page: req.query.page || 0,

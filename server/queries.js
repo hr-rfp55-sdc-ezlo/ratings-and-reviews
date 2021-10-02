@@ -20,7 +20,8 @@ pool.query('SELECT NOW()', (err, res) => {
 })
 
 const getReviews = (params, callback) => {
-  var query = `SELECT r.product_id as product, r.id as review_id, r.rating, r.summary, r.recommend, r.response, r.body, r.date, r.reviewer_name, r.helpfulness, json_agg(json_build_object('id', rp.id, 'url', rp.url)) as photos FROM reviews r INNER JOIN reviews_photos rp on r.id = rp.review_id WHERE r.product_id = $1 GROUP BY r.id ORDER BY $2 LIMIT $3 OFFSET $4`;
+  var query = `SELECT r.product_id as product,
+  json_agg(json_build_object('review_id', r.id, 'rating', r.rating, 'summary', r.summary, 'recommend', r.recommend, 'response', r.response, 'body', r.body, 'date', r.date, 'reviewer_name', r.reviewer_name, 'helpfulness', r.helpfulness, 'photos', json_build_object('id', rp.id, 'url', rp.url))) AS results FROM reviews r INNER JOIN reviews_photos rp on r.id = rp.review_id WHERE r.product_id = $1 GROUP BY r.id ORDER BY $2 LIMIT $3 OFFSET $4`;
   var values = [params.product_id, params.sort, params.count, params.count * params.page];
 
   pool.query(query, values, (err, res) => {
@@ -51,7 +52,7 @@ WHERE product_id = 1
 GROUP BY product_id
 
 SELECT r.product_id as product,
-  json_agg(json_build_object('review_id', r.id, 'rating', r.rating, 'summary', r.summary, 'recommend', r.recommend, 'response', r.response, 'body', r.body, 'date', r.date, 'reviewer_name', r.reviewer_name, 'helpfulness', r.helpfulness, 'photos', json_agg(json_build_object('id', rp.id, 'url', rp.url)) results) FROM reviews r INNER JOIN reviews_photos rp on r.id = rp.review_id WHERE r.product_id = 1 GROUP BY r.id;
+  json_agg(json_build_object('review_id', r.id, 'rating', r.rating, 'summary', r.summary, 'recommend', r.recommend, 'response', r.response, 'body', r.body, 'date', r.date, 'reviewer_name', r.reviewer_name, 'helpfulness', r.helpfulness, 'photos', json_agg(json_build_object('id', rp.id, 'url', rp.url)))) AS results FROM reviews r INNER JOIN reviews_photos rp on r.id = rp.review_id WHERE r.product_id = 1 GROUP BY r.id;
 
 SELECT reviews.id json_object_agg
 

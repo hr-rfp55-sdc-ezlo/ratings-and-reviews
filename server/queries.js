@@ -112,7 +112,42 @@ COALESCE(json_agg(json_build_object('id', id, 'url', url)) FILTER (WHERE id IS N
 */
 
 const getMeta = (params, callback) => {
-  var query = `SELECT reviews.product_id, count(CASE reviews.rating WHEN 1 THEN 1 ELSE NULL END) as "1", count(CASE reviews.rating WHEN 2 THEN 1 ELSE NULL END) as "2", count(CASE reviews.rating WHEN 3 THEN 1 ELSE NULL END) as "3", count(CASE reviews.rating WHEN 4 THEN 1 ELSE NULL END) as "4", count(CASE reviews.rating WHEN 5 THEN 1 ELSE NULL END) as "5", count(CASE reviews.recommend WHEN false THEN 1 ELSE NULL END) as "rec0", count(CASE reviews.recommend WHEN true THEN 1 ELSE NULL END) as "rec1", characteristics.name, characteristic_reviews.characteristic_id, avg(characteristic_reviews.value) FROM reviews LEFT OUTER JOIN characteristic_reviews ON (reviews.id = characteristic_reviews.review_id) LEFT OUTER JOIN characteristics ON (characteristic_reviews.characteristic_id = characteristics.id) WHERE reviews.product_id = $1 AND characteristic_id IN (SELECT id FROM characteristics WHERE product_id = $1) GROUP BY reviews.product_id, reviews.rating, characteristic_reviews.characteristic_id, characteristics.name`;
+  var query = `SELECT
+  reviews.product_id,
+  json_build_object(
+    '1', count(CASE reviews.rating WHEN 1 THEN 1 ELSE NULL END),
+    '2', count(CASE reviews.rating WHEN 2 THEN 1 ELSE NULL END),
+    '3', count(CASE reviews.rating WHEN 3 THEN 1 ELSE NULL END),
+    '4', count(CASE reviews.rating WHEN 4 THEN 1 ELSE NULL END),
+    '5', count(CASE reviews.rating WHEN 5 THEN 1 ELSE NULL END)
+  ) ratings,
+  json_build_object(
+    '0', count(CASE reviews.recommend WHEN true THEN 1 ELSE NULL END),
+    '1', count(CASE reviews.recommend WHEN false THEN 1 ELSE NULL END)
+  ) recommended,
+  json_build_object(
+    characteristics.name,
+    json_build_object(
+      'id', characteristic_reviews.characteristic_id,
+      'value', avg(characteristic_reviews.value)
+    )
+  ) AS characteristics
+  FROM
+  reviews
+  LEFT JOIN
+    characteristic_reviews
+    ON
+    characteristic_reviews.review_id = reviews.id
+  LEFT JOIN
+    characteristics
+    ON
+    characteristics.id = characteristic_reviews.characteristic_id
+  WHERE
+    reviews.product_id = $1
+  GROUP BY
+    reviews.product_id,
+    characteristics.name,
+    characteristic_reviews.characteristic_id`;
   var values = [params.product_id];
 
   pool.query(query, values, (err, res) => {
@@ -144,36 +179,49 @@ GROUP BY
 SELECT
   reviews.product_id,
   json_build_object(
-    "1", count(CASE reviews.rating WHEN 1 THEN 1 ELSE NULL END),
-    "2", count(CASE reviews.rating WHEN 2 THEN 1 ELSE NULL END),
-    "3", count(CASE reviews.rating WHEN 3 THEN 1 ELSE NULL END),
-    "4", count(CASE reviews.rating WHEN 4 THEN 1 ELSE NULL END),
-    "5", count(CASE reviews.rating WHEN 5 THEN 1 ELSE NULL END)
+    '1', count(CASE reviews.rating WHEN 1 THEN 1 ELSE NULL END),
+    '2', count(CASE reviews.rating WHEN 2 THEN 1 ELSE NULL END),
+    '3', count(CASE reviews.rating WHEN 3 THEN 1 ELSE NULL END),
+    '4', count(CASE reviews.rating WHEN 4 THEN 1 ELSE NULL END),
+    '5', count(CASE reviews.rating WHEN 5 THEN 1 ELSE NULL END)
   ) ratings,
   json_build_object(
-    "0", count(CASE reviews.recommend WHEN true THEN 1 ELSE NULL END),
-    "1", count(CASE reviews.recommend WHEN false THEN 1 ELSE NULL END),
+    '0', count(CASE reviews.recommend WHEN true THEN 1 ELSE NULL END),
+    '1', count(CASE reviews.recommend WHEN false THEN 1 ELSE NULL END)
   ) recommended,
-  json_build_object(
-    json_build_objct(
-
-    ) Size,
+  char_ratings as characteristics
+  FROM reviews
+  LEFT JOIN (
+    SELECT
+    characteristics.name,
     json_build_object(
+      'id', characteristic_reviews.characteristic_id,
+      'value', avg(characteristic_reviews.value)
+    )
+    FROM
+    characteristics
+    LEFT JOIN
+    characteristic_reviews
+    ON
+    characteristics.id = characteristic_reviews.characteristic_id
+    GROUP BY
+    characteristics.name,
+    characteristic_reviews.characteristic_id
+  ) char_ratings
+  ON
+  reviews.id = (SELECT review_id FROM characteristic_reviews)
+  WHERE
+  reviews.product_id = $1
+  GROUP BY
+  reviews.product_id
 
-    ) Width,
-    json_build_object(
 
-    ) Comfort,
-    json_build_object(
 
-    ) Quality,
-    json_build_object(
+FROM
+  reviews
+WHERE reviews.product_id = $1
+GROUP BY reviews.product_id
 
-    ) Fit,
-    json_build_object(
-
-    ) Length,
-  ) characteristics
 
 
   characteristic_reviews.characteristic_id,

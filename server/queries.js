@@ -159,54 +159,6 @@ GROUP BY
 //READ UP ON QUERIES
 // BIG AGGREGATE WITH AVERAGES AND NESTED OBJECTS
 /**
-
-SELECT
-  r.product_id,
-  json_build_object(
-    '1', count(CASE r.rating WHEN 1 THEN 1 ELSE NULL END),
-    '2', count(CASE r.rating WHEN 2 THEN 1 ELSE NULL END),
-    '3', count(CASE r.rating WHEN 3 THEN 1 ELSE NULL END),
-    '4', count(CASE r.rating WHEN 4 THEN 1 ELSE NULL END),
-    '5', count(CASE r.rating WHEN 5 THEN 1 ELSE NULL END)
-  ) ratings,
-  json_build_object(
-    '0', count(CASE r.recommend WHEN true THEN 1 ELSE NULL END),
-    '1', count(CASE r.recommend WHEN false THEN 1 ELSE NULL END)
-  ) recommended,
-  json_object(
-    json_agg(
-      c.name
-    ),
-    json_agg(
-      json_build_object(
-        'id', cr.characteristic_id,
-        'value, cr.value
-      )
-    )
-  ) characteristics
-FROM
-  reviews r
-LEFT JOIN
-  characteristic_reviews cr
-ON
-  cr.review_id = r.id
-LEFT JOIN
-  characteristics c
-ON
-  c.id = cr.characteristic_id
-WHERE
-  r.product_id = $1
-GROUP BY
-  r.product_id,
-  c.name,
-  cr.characteristic_id
-
-
-
-    json_build_object(
-      'id', cr.characteristic_id,
-      'value', avg(cr.value)
-    )
  */
 
 
@@ -241,7 +193,20 @@ const reportReview = (params, callback) => {
 
 const postReview = (params, callback) => {
   var query = `INSERT INTO reviews (product_id, rating, date, summary, body, recommend, reviewer_name, email) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
-  var values = [params.product_id, params.rating, params.date, params.summary, params.body, params.recommend, params.reviewer_name, params.email]; //CHECK HOW DATA IS SENT FROM APP
+  var values = [params.product_id,
+    params.rating,
+    params.date,
+    params.summary,
+    params.body,
+    params.recommend,
+    params.reviewer_name,
+    params.email,
+    params.characteristics.size,
+    params.characteristics.width,
+    params.characteristics.comfort,
+    params.characteristics.quality,
+    params.characteristics.length,
+    params.characteristics.fit]; //CHECK HOW DATA IS SENT FROM APP
 
   pool.query(query, values, (err, res) => {
     if (err) {
@@ -254,9 +219,70 @@ const postReview = (params, callback) => {
 }
 
 /**
-
-
-
+WITH
+  review as (
+    INSERT INTO
+      reviews (product_id, rating, date, summary, body, recommend, reviewer_name, email)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    RETURNING id
+  )
+INSERT INTO
+  characteristic_reviews (review_id, value, characteristic_id)
+VALUES
+  (review.id, $9,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = $1 && c.name == 'Size'
+    )
+  ),
+  (review.id, $10,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = $1 && c.name == 'Width'
+    )
+  ),
+  (review.id, $11,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = $1 && c.name == 'Comfort'
+    )
+  ),
+  (review.id, $12,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = $1 && c.name == 'Quality'
+    )
+  ),
+  (review.id, $13,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = $1 && c.name == 'Length'
+    )
+  ),
+  (review.id, $14,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = $1 && c.name == 'Fit'
+    )
+  )
  */
 
 

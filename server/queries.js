@@ -113,41 +113,39 @@ COALESCE(json_agg(json_build_object('id', id, 'url', url)) FILTER (WHERE id IS N
 
 const getMeta = (params, callback) => {
   var query = `SELECT
-  reviews.product_id,
+  r.product_id,
   json_build_object(
-    '1', count(CASE reviews.rating WHEN 1 THEN 1 ELSE NULL END),
-    '2', count(CASE reviews.rating WHEN 2 THEN 1 ELSE NULL END),
-    '3', count(CASE reviews.rating WHEN 3 THEN 1 ELSE NULL END),
-    '4', count(CASE reviews.rating WHEN 4 THEN 1 ELSE NULL END),
-    '5', count(CASE reviews.rating WHEN 5 THEN 1 ELSE NULL END)
+    '1', count(CASE r.rating WHEN 1 THEN 1 ELSE NULL END),
+    '2', count(CASE r.rating WHEN 2 THEN 1 ELSE NULL END),
+    '3', count(CASE r.rating WHEN 3 THEN 1 ELSE NULL END),
+    '4', count(CASE r.rating WHEN 4 THEN 1 ELSE NULL END),
+    '5', count(CASE r.rating WHEN 5 THEN 1 ELSE NULL END)
   ) ratings,
   json_build_object(
-    '0', count(CASE reviews.recommend WHEN true THEN 1 ELSE NULL END),
-    '1', count(CASE reviews.recommend WHEN false THEN 1 ELSE NULL END)
+    '0', count(CASE r.recommend WHEN true THEN 1 ELSE NULL END),
+    '1', count(CASE r.recommend WHEN false THEN 1 ELSE NULL END)
   ) recommended,
-  json_build_object(
-    characteristics.name,
+  json_object_agg(
+    c.name,
     json_build_object(
-      'id', characteristic_reviews.characteristic_id,
-      'value', avg(characteristic_reviews.value)
+      'id', cr.characteristic_id,
+      'value', cr.value
     )
   ) AS characteristics
-  FROM
-  reviews
-  LEFT JOIN
-    characteristic_reviews
-    ON
-    characteristic_reviews.review_id = reviews.id
-  LEFT JOIN
-    characteristics
-    ON
-    characteristics.id = characteristic_reviews.characteristic_id
-  WHERE
-    reviews.product_id = $1
-  GROUP BY
-    reviews.product_id,
-    characteristics.name,
-    characteristic_reviews.characteristic_id`;
+FROM
+  reviews r
+LEFT JOIN
+  characteristics c
+ON
+  c.product_id = r.product_id
+LEFT JOIN
+  characteristic_reviews cr
+ON
+  cr.characteristic_id = c.id
+WHERE
+  r.product_id = $1
+GROUP BY
+  r.product_id`;
   var values = [params.product_id];
 
   pool.query(query, values, (err, res) => {
@@ -160,96 +158,55 @@ const getMeta = (params, callback) => {
 }
 //READ UP ON QUERIES
 // BIG AGGREGATE WITH AVERAGES AND NESTED OBJECTS
-// 'SELECT avg(value) FROM characteristic_reviews WHERE characteristic_id = #'
-// 'SELECT characteristic_id, avg(value) FROM characteristic_reviews WHERE characteristic_id < 5;'
 /**
 
-
 SELECT
-    characteristic_id,
-    avg(value)
-FROM
-    characteristic_reviews
-WHERE
-    characteristic_id = (SELECT id FROM characteristics WHERE product_id = 40344)
-GROUP BY
-    characteristic_id;
-
-
-SELECT
-  reviews.product_id,
+  r.product_id,
   json_build_object(
-    '1', count(CASE reviews.rating WHEN 1 THEN 1 ELSE NULL END),
-    '2', count(CASE reviews.rating WHEN 2 THEN 1 ELSE NULL END),
-    '3', count(CASE reviews.rating WHEN 3 THEN 1 ELSE NULL END),
-    '4', count(CASE reviews.rating WHEN 4 THEN 1 ELSE NULL END),
-    '5', count(CASE reviews.rating WHEN 5 THEN 1 ELSE NULL END)
+    '1', count(CASE r.rating WHEN 1 THEN 1 ELSE NULL END),
+    '2', count(CASE r.rating WHEN 2 THEN 1 ELSE NULL END),
+    '3', count(CASE r.rating WHEN 3 THEN 1 ELSE NULL END),
+    '4', count(CASE r.rating WHEN 4 THEN 1 ELSE NULL END),
+    '5', count(CASE r.rating WHEN 5 THEN 1 ELSE NULL END)
   ) ratings,
   json_build_object(
-    '0', count(CASE reviews.recommend WHEN true THEN 1 ELSE NULL END),
-    '1', count(CASE reviews.recommend WHEN false THEN 1 ELSE NULL END)
+    '0', count(CASE r.recommend WHEN true THEN 1 ELSE NULL END),
+    '1', count(CASE r.recommend WHEN false THEN 1 ELSE NULL END)
   ) recommended,
-  char_ratings as characteristics
-  FROM reviews
-  LEFT JOIN (
-    SELECT
-    characteristics.name,
-    json_build_object(
-      'id', characteristic_reviews.characteristic_id,
-      'value', avg(characteristic_reviews.value)
+  json_object(
+    json_agg(
+      c.name
+    ),
+    json_agg(
+      json_build_object(
+        'id', cr.characteristic_id,
+        'value, cr.value
+      )
     )
-    FROM
-    characteristics
-    LEFT JOIN
-    characteristic_reviews
-    ON
-    characteristics.id = characteristic_reviews.characteristic_id
-    GROUP BY
-    characteristics.name,
-    characteristic_reviews.characteristic_id
-  ) char_ratings
-  ON
-  reviews.id = (SELECT review_id FROM characteristic_reviews)
-  WHERE
-  reviews.product_id = $1
-  GROUP BY
-  reviews.product_id
-
-
-
+  ) characteristics
 FROM
-  reviews
-WHERE reviews.product_id = $1
-GROUP BY reviews.product_id
-
-
-
-  characteristic_reviews.characteristic_id,
-  avg(characteristic_reviews.value)
-FROM
-  reviews, characteristic_reviews
+  reviews r
+LEFT JOIN
+  characteristic_reviews cr
+ON
+  cr.review_id = r.id
+LEFT JOIN
+  characteristics c
+ON
+  c.id = cr.characteristic_id
 WHERE
-  product_id = 7 AND characteristic_id IN (SELECT id FROM characteristics WHERE product_id = 7)
-GROUP BY product_id, characteristic_reviews.characteristic_id;
-
-SELECT
-  reviews.product_id,
-  count(CASE reviews.rating WHEN 1 THEN 1 ELSE NULL END) as "1",
-  count(CASE reviews.rating WHEN 2 THEN 1 ELSE NULL END) as "2",
-  count(CASE reviews.rating WHEN 3 THEN 1 ELSE NULL END) as "3",
-  count(CASE reviews.rating WHEN 4 THEN 1 ELSE NULL END) as "4",
-  count(CASE reviews.rating WHEN 5 THEN 1 ELSE NULL END) as "5",
-  count(CASE reviews.recommend WHEN false THEN 1 ELSE NULL END) as "0",
-  count(CASE reviews.recommend WHEN true THEN 1 ELSE NULL END) as "1",
-  characteristics.name,
-  characteristic_reviews.characteristic_id,
-  avg(characteristic_reviews.value)
-FROM
-  reviews INNER JOIN characteristic_reviews ON (reviews.id = characteristic_reviews.review_id) INNER JOIN characteristics ON (characteristic_reviews.characteristic_id = characteristics.id)
-WHERE
-  reviews.product_id = 4 AND characteristic_id IN (SELECT id FROM characteristics WHERE product_id = 4)
+  r.product_id = $1
 GROUP BY
-  reviews.product_id, reviews.rating, characteristic_reviews.characteristic_id, characteristics.name
+  r.product_id,
+  c.name,
+  cr.characteristic_id
+
+
+
+    json_build_object(
+      'id', cr.characteristic_id,
+      'value', avg(cr.value)
+    )
  */
 
 

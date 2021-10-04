@@ -7,7 +7,7 @@ export let options = {
 };
 
 export default function () {
-  var url = 'localhost:3000/reviews';
+  var url = 'http://localhost:3000/reviews';
   // var payload = JSON.stringify({
   //   email: 'aaa',
   //   password: 'bbb',

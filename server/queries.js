@@ -192,7 +192,68 @@ const reportReview = (params, callback) => {
 
 
 const postReview = (params, callback) => {
-  var query = `INSERT INTO reviews (product_id, rating, date, summary, body, recommend, reviewer_name, email) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
+  var query = `WITH
+  review as (
+    INSERT INTO
+      reviews (product_id, rating, date, summary, body, recommend, reviewer_name, email)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    RETURNING id
+  )
+  VALUES
+  ((SELECT id FROM review), $9,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = 'Size'
+    )
+  ),
+  ((SELECT id FROM review), $10,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = 'Width'
+    )
+  ),
+  ((SELECT id FROM review), $11,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = 'Comfort'
+    )
+  ),
+  ((SELECT id FROM review), $12,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = 'Quality'
+    )
+  ),
+  ((SELECT id FROM review), $13,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = 'Length'
+    )
+  ),
+  ((SELECT id FROM review), $14,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = 'Fit'
+    )
+  )`;
   var values = [params.product_id,
     params.rating,
     params.date,
@@ -283,6 +344,72 @@ VALUES
       c.product_id = $1 && c.name == 'Fit'
     )
   )
+
+
+WITH
+  review as (
+    INSERT INTO
+      reviews (product_id, rating, date, summary, body, recommend, reviewer_name, email)
+    VALUES (40335, 5, 1633368590450, 'Best ever', 'This is the best thing Ive ever bought.', true, 'derek', 'very@happy.com')
+    RETURNING id
+  )
+INSERT INTO
+  characteristic_reviews (review_id, value, characteristic_id)
+VALUES
+  ((SELECT id FROM review), 5,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = 'Size'
+    )
+  ),
+  ((SELECT id FROM review), 5,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = Width'
+    )
+  ),
+  ((SELECT id FROM review), 5,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = 'Comfort'
+    )
+  ),
+  ((SELECT id FROM review), 5,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = 'Quality'
+    )
+  ),
+  ((SELECT id FROM review), 5,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = 'Length'
+    )
+  ),
+  ((SELECT id FROM review), 5,
+    (SELECT
+      id
+    FROM
+      characteristics c
+    WHERE
+      c.product_id = 40355 AND c.name = 'Fit'
+    )
+  );
  */
 
 

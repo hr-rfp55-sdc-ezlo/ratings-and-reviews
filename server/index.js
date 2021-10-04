@@ -149,6 +149,14 @@ router.post('/reviews', (req, res) => {
 */
 app.post('/reviews', (req, res) => {
   var date = new Date();
+  var characteristics = {
+    size: req.query.characteristics.Size || null,
+    width: req.query.characteristics.Width || null,
+    comfort: req.query.characteristics.Comfort || null,
+    quality: req.query.characteristics.Quality || null,
+    length: req.query.characteristics.Length || null,
+    fit: req.query.characteristics.Fit || null
+  }
   var params = {
     product_id: req.query.product_id,
     rating: req.query.rating,

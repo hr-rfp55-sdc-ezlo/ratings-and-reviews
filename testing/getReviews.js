@@ -2,8 +2,8 @@ import http from 'k6/http';
 import { sleep } from 'k6';
 
 export let options = {
-  vus: 10,
-  duration: '30s',
+  vus: 1000,
+  duration: '60s',
 };
 
 export default function () {
@@ -16,7 +16,7 @@ export default function () {
   var params = {
     headers: {
       'Content-Type': 'application/json',
-      'product_id': 5,
+      'product_id': 1000011,
       'page': 0,
       'count': 10,
     },

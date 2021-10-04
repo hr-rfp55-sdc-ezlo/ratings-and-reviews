@@ -197,61 +197,62 @@ const postReview = (params, callback) => {
     INSERT INTO
       reviews (product_id, rating, date, summary, body, recommend, reviewer_name, email)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    RETURNING id
+    RETURNING id as r_id
   )
+  INSERT INTO characteristic_reviews (review_id, value, characteristic_id)
   VALUES
-  ((SELECT id FROM review), $9,
+  ((SELECT r_id FROM review), $9,
     (SELECT
-      id
+      c.id
     FROM
       characteristics c
     WHERE
-      c.product_id = 40355 AND c.name = 'Size'
+      c.product_id = $1 AND c.name = 'Size'
     )
   ),
-  ((SELECT id FROM review), $10,
+  ((SELECT r_id FROM review), $10,
     (SELECT
-      id
+      c.id
     FROM
       characteristics c
     WHERE
-      c.product_id = 40355 AND c.name = 'Width'
+      c.product_id = $1 AND c.name = 'Width'
     )
   ),
-  ((SELECT id FROM review), $11,
+  ((SELECT r_id FROM review), $11,
     (SELECT
-      id
+      c.id
     FROM
       characteristics c
     WHERE
-      c.product_id = 40355 AND c.name = 'Comfort'
+      c.product_id = $1 AND c.name = 'Comfort'
     )
   ),
-  ((SELECT id FROM review), $12,
+  ((SELECT r_id FROM review), $12,
     (SELECT
-      id
+      c.id
     FROM
       characteristics c
     WHERE
-      c.product_id = 40355 AND c.name = 'Quality'
+      c.product_id = $1 AND c.name = 'Quality'
     )
   ),
-  ((SELECT id FROM review), $13,
+  ((SELECT r_id FROM review), $13,
     (SELECT
-      id
+      c.id
     FROM
       characteristics c
     WHERE
-      c.product_id = 40355 AND c.name = 'Length'
+      c.product_id = $1 AND c.name = 'Length'
     )
   ),
-  ((SELECT id FROM review), $14,
+  ((SELECT r_id FROM review), $14,
     (SELECT
-      id
+      c.id
     FROM
       characteristics c
     WHERE
-      c.product_id = 40355 AND c.name = 'Fit'
+      c.product_id = $1 AND c.name = 'Fit'
     )
   )`;
   var values = [params.product_id,

@@ -7,7 +7,8 @@ const pg = require('./queries.js');
 // const db = require('./database/index.sql')
 
 app.use(cors());
-app.use(express.static('/reviews'));
+// app.use(express.static('/reviews'));
+app.use(express.static(`${__dirname}/../public`));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

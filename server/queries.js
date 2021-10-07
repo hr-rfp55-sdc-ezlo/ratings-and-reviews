@@ -39,7 +39,7 @@ const getReviews = (params, callback) => {
           'review_id', rid, 'rating', rating, 'summary', summary, 'recommend', recommend, 'response', response, 'body', body, 'date', date, 'reviewer_name', reviewer_name, 'helpfulness', helpfulness, 'photos', photos
     )
   ORDER BY ${sort} DESC
-  )
+  ) as results
 FROM
   (SELECT
     product_id, rid, rating, summary, recommend, response, body, date, reviewer_name, helpfulness, COALESCE(json_agg(json_build_object('id', rpid, 'url', url)) FILTER (WHERE rpid IS NOT NULL), '[]') photos

@@ -4,6 +4,7 @@ const { Pool, Client } = require('pg')
 const pool = new Pool({
   user: 'derek',
   password: '',
+  // host: 'localhost',
   host: 'ec2-18-118-107-137.us-east-2.compute.amazonaws.com',
   database: 'reviews',
   port: 5432,
@@ -20,34 +21,48 @@ pool.query('SELECT NOW()', (err, res) => {
 })
 
 const getReviews = (params, callback) => {
+  var sort;
+  if (params.sort === 'helpfulness') {
+    sort = "helpfulness";
+  }
+  // if (params.sort === 'relevance') {
+  //   sort =
+  // }
+  if (params.sort === 'newest') {
+    sort = "date";
+  }
   var query = `SELECT
-    r.product_id as product,
-    json_agg(
-      json_build_object(
-        'review_id', r.id, 'rating', r.rating, 'summary', r.summary, 'recommend', r.recommend, 'response', r.response, 'body', r.body, 'date', r.date, 'reviewer_name', r.reviewer_name, 'helpfulness', r.helpfulness, 'photos', photos
-      )
-    ) results
-  FROM reviews r
-  LEFT JOIN (
-    SELECT
-      review_id,
-      json_agg(
-        json_build_object(
-          'id', rp.id,
-          'url', rp.url
-        )
-      ) photos
-    FROM
-      reviews_photos rp
-    GROUP BY rp.review_id
+  product_id as product,
+  json_agg(
+    json_build_object(
+          'review_id', rid, 'rating', rating, 'summary', summary, 'recommend', recommend, 'response', response, 'body', body, 'date', date, 'reviewer_name', reviewer_name, 'helpfulness', helpfulness, 'photos', photos
+    )
+  ORDER BY ${sort} DESC
   )
-  rp on r.id = rp.review_id
-  WHERE r.product_id = $1
-  GROUP BY r.product_id
-  ORDER BY $2
-  LIMIT $3
-  OFFSET $4`;
-  var values = [params.product_id, params.sort, params.count, params.count * params.page];
+FROM
+  (SELECT
+    product_id, rid, rating, summary, recommend, response, body, date, reviewer_name, helpfulness, COALESCE(json_agg(json_build_object('id', rpid, 'url', url)) FILTER (WHERE rpid IS NOT NULL), '[]') photos
+  FROM
+    (SELECT
+      r.product_id, r.id as rid, r.rating, r.summary, r.recommend, r.response, r.body, r.date, r.reviewer_name, r.helpfulness, rp.id as rpid, rp.url
+    FROM
+      reviews r
+    LEFT OUTER JOIN
+      reviews_photos rp
+    ON
+      r.id = rp.review_id
+    WHERE
+      r.product_id = $1) t1
+  GROUP BY
+    product_id, rid, rating, summary, recommend, recommend, response, body, date, reviewer_name, helpfulness) t2
+GROUP BY
+  product_id
+  LIMIT $2
+  OFFSET $3`;
+  // if (params.sort === 'helpfulness') {
+  //   sort =
+  // }
+  var values = [params.product_id, params.count, params.count * params.page];
 
   pool.query(query, values, (err, res) => {
     console.error(err);
@@ -60,55 +75,55 @@ const getReviews = (params, callback) => {
 }
 
 /*
-SELECT r.product_id as product,
-  json_agg(json_build_object('review_id', r.id, 'rating', r.rating, 'summary', r.summary, 'recommend', r.recommend, 'response', r.response, 'body', r.body, 'date', r.date, 'reviewer_name', r.reviewer_name, 'helpfulness', r.helpfulness, 'photos', json_agg(json_build_object('id', rp.id, 'url', rp.url)))) AS results FROM reviews r INNER JOIN reviews_photos rp on r.id = rp.review_id WHERE r.product_id = 1 GROUP BY r.id;
-
 SELECT
-  r.product_id as product,
+  product_id as product,
   json_agg(
     json_build_object(
-      'review_id', r.id, 'rating', r.rating, 'summary', r.summary, 'recommend', r.recommend, 'response', r.response, 'body', r.body, 'date', r.date, 'reviewer_name', r.reviewer_name, 'helpfulness', r.helpfulness, 'photos',
-      json_build_array(
-        json_build_object(
-          'id', rp.id, 'url', rp.url
-        )
-      )
+          'review_id', rid, 'rating', rating, 'summary', summary, 'recommend', recommend, 'response', response, 'body', body, 'date', date, 'reviewer_name', reviewer_name, 'helpfulness', helpfulness, 'photos', photos
     )
-  ) AS results
-  FROM reviews r
-  INNER JOIN reviews_photos rp on r.id = rp.review_id
-  WHERE r.product_id = $1
-  GROUP BY r.id
-  ORDER BY $2
-  LIMIT $3
-  OFFSET $4
-
-SELECT
-  r.product_id as product
-  json_build_object(
-    'results', json_agg(
-      json_build_object(
-        review_id', r.id, 'rating', r.rating, 'summary', r.summary, 'recommend', r.recommend, 'response', r.response, 'body', r.body, 'date', r.date, 'reviewer_name', r.reviewer_name, 'helpfulness', r.helpfulness, 'photos', photos
-      )
-    )
-  ) results
-FROM reviews r
-LEFT JOIN (
-  SELECT
-    review_id,
-    json_agg(
-      json_build_object(
-        'id', rp.id,
-        'url', rp.id
-      )
-    ) photos
+  ORDER BY "helpfulness" DESC
+  )
+FROM
+  (SELECT
+    product_id, rid, rating, summary, recommend, response, body, date, reviewer_name, helpfulness, COALESCE(json_agg(json_build_object('id', rpid, 'url', url)) FILTER (WHERE rpid IS NOT NULL), '[]') photos
   FROM
-    reviews_photos rp
-)
-r on r.id = rp.review_id
-WHERE r.product_id = 40344;
+    (SELECT
+      r.product_id, r.id as rid, r.rating, r.summary, r.recommend, r.response, r.body, r.date, r.reviewer_name, r.helpfulness, rp.id as rpid, rp.url
+    FROM
+      reviews r
+    LEFT OUTER JOIN
+      reviews_photos rp
+    ON
+      r.id = rp.review_id
+    WHERE
+      r.product_id = 40334) t1
+  GROUP BY
+    product_id, rid, rating, summary, recommend, recommend, response, body, date, reviewer_name, helpfulness) t2
+GROUP BY
+  product_id
 
-COALESCE(json_agg(json_build_object('id', id, 'url', url)) FILTER (WHERE id IS NOT NULL), '[]') photos
+        )
+      ORDER BY ${sort} DESC
+    ) results
+  FROM reviews r
+  LEFT JOIN (
+    SELECT
+      review_id,
+      json_agg(
+        json_build_object(
+          'id',
+          'url', rp.url
+        )
+      ) photos
+    FROM
+      reviews_photos rp
+    GROUP BY rp.review_id
+  )
+  rp on r.id = rp.review_id
+  WHERE r.product_id = $1
+  GROUP BY r.product_id
+  LIMIT $2
+  OFFSET $3
 */
 
 const getMeta = (params, callback) => {

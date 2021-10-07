@@ -42,12 +42,12 @@ router.get('/reviews/:product_id', (req, res) => {
 
 app.get('/reviews', (req, res) => {
    var params = {
-     product_id: req.query.product_id,
-     sort: req.query.sort || 'helpfulness',
+     product_id: req.query.product_id || 4,
+     sort: req.query.sort || "helpfulness",
      count: req.query.count || 10,
      page: req.query.page || 0,
     };
-    console.log('GET request received:', req.query);
+    console.log('GET request received:', req.headers);
     console.log('params:', params);
 
     pg.getReviews(params, (err, data) => {

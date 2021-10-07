@@ -110,39 +110,41 @@ OFFSET 0
 
 const getMeta = (params, callback) => {
   var query = `SELECT
-  r.product_id,
+  product_id,
   json_build_object(
-    '1', count(CASE r.rating WHEN 1 THEN 1 ELSE NULL END),
-    '2', count(CASE r.rating WHEN 2 THEN 1 ELSE NULL END),
-    '3', count(CASE r.rating WHEN 3 THEN 1 ELSE NULL END),
-    '4', count(CASE r.rating WHEN 4 THEN 1 ELSE NULL END),
-    '5', count(CASE r.rating WHEN 5 THEN 1 ELSE NULL END)
-  ) ratings,
+    '1', count(CASE rating WHEN 1 THEN 1 ELSE NULL END),
+    '2', count (CASE rating WHEN 2 THEN 1 ELSE NULL END),
+    '3', count(CASE rating WHEN 3 THEN 1 ELSE NULL END),
+    '4', count(CASE rating WHEN 4 THEN 1 ELSE NULL END),
+    '5', count(CASE rating WHEN 5 THEN 1 ELSE NULL END)
+  ) as ratings,
   json_build_object(
-    '0', count(CASE r.recommend WHEN true THEN 1 ELSE NULL END),
-    '1', count(CASE r.recommend WHEN false THEN 1 ELSE NULL END)
-  ) recommended,
-  json_object_agg(
-    c.name,
-    json_build_object(
-      'id', cr.characteristic_id,
-      'value', cr.value
-    )
-  ) AS characteristics
+    '0', count(CASE recommend WHEN true THEN 1 ELSE NULL END),
+    '1', count(CASE recommend WHEN false THEN 1 ELSE NULL END)
+  ) as recommended,
+  json_object_agg(name, cr_avg) as characteristics
 FROM
-  reviews r
-LEFT JOIN
-  characteristics c
-ON
-  c.product_id = r.product_id
-LEFT JOIN
-  characteristic_reviews cr
-ON
-  cr.characteristic_id = c.id
-WHERE
-  r.product_id = $1
+  (SELECT
+    product_id, rating, recommend, name, json_build_object('id', crid, 'value', AVG(value)) cr_avg
+  FROM
+    (SELECT
+      r.product_id, r.rating, r.recommend, c.name, cr.characteristic_id as crid, cr.value
+    FROM
+      reviews r
+    LEFT OUTER JOIN
+      characteristics c
+    ON
+      c.product_id = r.product_id
+    LEFT JOIN
+      characteristic_reviews cr
+    ON
+      cr.characteristic_id = c.id
+    WHERE
+      r.product_id = $1) t1
+  GROUP BY
+  product_id, rating, recommend, name, crid) t2
 GROUP BY
-  r.product_id`;
+  product_id, rating, recommend`;
   var values = [params.product_id];
 
   pool.query(query, values, (err, res) => {
@@ -156,7 +158,43 @@ GROUP BY
 //READ UP ON QUERIES
 // BIG AGGREGATE WITH AVERAGES AND NESTED OBJECTS
 /**
- */
+SELECT
+  product_id,
+  json_build_object(
+    '1', count(CASE rating WHEN 1 THEN 1 ELSE NULL END),
+    '2', count (CASE rating WHEN 2 THEN 1 ELSE NULL END),
+    '3', count(CASE rating WHEN 3 THEN 1 ELSE NULL END),
+    '4', count(CASE rating WHEN 4 THEN 1 ELSE NULL END),
+    '5', count(CASE rating WHEN 5 THEN 1 ELSE NULL END)
+  ) as ratings,
+  json_build_object(
+    '0', count(CASE recommend WHEN true THEN 1 ELSE NULL END),
+    '1', count(CASE recommend WHEN false THEN 1 ELSE NULL END)
+  ) as recommended,
+  json_object_agg(name, cr_avg) as characteristics
+FROM
+  (SELECT
+    product_id, rating, recommend, name, json_build_object('id', crid, 'value', AVG(value)) cr_avg
+  FROM
+    (SELECT
+      r.product_id, r.rating, r.recommend, c.name, cr.characteristic_id as crid, cr.value
+    FROM
+      reviews r
+    LEFT OUTER JOIN
+      characteristics c
+    ON
+      c.product_id = r.product_id
+    LEFT JOIN
+      characteristic_reviews cr
+    ON
+      cr.characteristic_id = c.id
+    WHERE
+      r.product_id = 1000011) t1
+  GROUP BY
+  product_id, rating, recommend, name, crid) t2
+GROUP BY
+  product_id, rating, recommend
+*/
 
 
 const markHelpful = (params, callback) => {
@@ -278,136 +316,7 @@ const postReview = (params, callback) => {
 }
 
 /**
-WITH
-  review as (
-    INSERT INTO
-      reviews (product_id, rating, date, summary, body, recommend, reviewer_name, email)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    RETURNING id
-  )
-INSERT INTO
-  characteristic_reviews (review_id, value, characteristic_id)
-VALUES
-  (review.id, $9,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = $1 && c.name == 'Size'
-    )
-  ),
-  (review.id, $10,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = $1 && c.name == 'Width'
-    )
-  ),
-  (review.id, $11,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = $1 && c.name == 'Comfort'
-    )
-  ),
-  (review.id, $12,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = $1 && c.name == 'Quality'
-    )
-  ),
-  (review.id, $13,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = $1 && c.name == 'Length'
-    )
-  ),
-  (review.id, $14,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = $1 && c.name == 'Fit'
-    )
-  )
-
-
-WITH
-  review as (
-    INSERT INTO
-      reviews (product_id, rating, date, summary, body, recommend, reviewer_name, email)
-    VALUES (40335, 5, 1633368590450, 'Best ever', 'This is the best thing Ive ever bought.', true, 'derek', 'very@happy.com')
-    RETURNING id
-  )
-INSERT INTO
-  characteristic_reviews (review_id, value, characteristic_id)
-VALUES
-  ((SELECT id FROM review), 5,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = 40355 AND c.name = 'Size'
-    )
-  ),
-  ((SELECT id FROM review), 5,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = 40355 AND c.name = Width'
-    )
-  ),
-  ((SELECT id FROM review), 5,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = 40355 AND c.name = 'Comfort'
-    )
-  ),
-  ((SELECT id FROM review), 5,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = 40355 AND c.name = 'Quality'
-    )
-  ),
-  ((SELECT id FROM review), 5,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = 40355 AND c.name = 'Length'
-    )
-  ),
-  ((SELECT id FROM review), 5,
-    (SELECT
-      id
-    FROM
-      characteristics c
-    WHERE
-      c.product_id = 40355 AND c.name = 'Fit'
-    )
-  );
+;
  */
 
 

@@ -6,6 +6,7 @@ const pool = new Pool({
   password: '',
   // host: 'localhost',
   host: 'ec2-18-118-107-137.us-east-2.compute.amazonaws.com',
+  // host: 'ec2-18-118-107-137.us-east-2.compute.amazonaws.com',
   database: 'reviews',
   port: 5432,
 })
@@ -57,8 +58,8 @@ FROM
     product_id, rid, rating, summary, recommend, recommend, response, body, date, reviewer_name, helpfulness) t2
 GROUP BY
   product_id
-  LIMIT $2
-  OFFSET $3`;
+LIMIT $2
+OFFSET $3`;
   // if (params.sort === 'helpfulness') {
   //   sort =
   // }
@@ -101,29 +102,10 @@ FROM
     product_id, rid, rating, summary, recommend, recommend, response, body, date, reviewer_name, helpfulness) t2
 GROUP BY
   product_id
+LIMIT 4
+OFFSET 0
 
-        )
-      ORDER BY ${sort} DESC
-    ) results
-  FROM reviews r
-  LEFT JOIN (
-    SELECT
-      review_id,
-      json_agg(
-        json_build_object(
-          'id',
-          'url', rp.url
-        )
-      ) photos
-    FROM
-      reviews_photos rp
-    GROUP BY rp.review_id
-  )
-  rp on r.id = rp.review_id
-  WHERE r.product_id = $1
-  GROUP BY r.product_id
-  LIMIT $2
-  OFFSET $3
+
 */
 
 const getMeta = (params, callback) => {

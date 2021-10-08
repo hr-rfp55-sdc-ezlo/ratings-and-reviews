@@ -4,8 +4,8 @@ const { Pool, Client } = require('pg')
 const pool = new Pool({
   user: 'derek',
   password: '',
-  // host: 'localhost',
-  host: 'ec2-18-118-107-137.us-east-2.compute.amazonaws.com',
+  host: 'localhost',
+  // host: 'ec2-18-118-107-137.us-east-2.compute.amazonaws.com',
   // host: 'ec2-18-118-107-137.us-east-2.compute.amazonaws.com',
   database: 'reviews',
   port: 5432,
@@ -53,13 +53,14 @@ FROM
     ON
       r.id = rp.review_id
     WHERE
-      r.product_id = $1) t1
+      r.product_id = $1
+    LIMIT $2
+    OFFSET $3
+    ) t1
   GROUP BY
     product_id, rid, rating, summary, recommend, recommend, response, body, date, reviewer_name, helpfulness) t2
 GROUP BY
-  product_id
-LIMIT $2
-OFFSET $3`;
+  product_id`;
   // if (params.sort === 'helpfulness') {
   //   sort =
   // }

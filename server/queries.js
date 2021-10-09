@@ -150,7 +150,7 @@ GROUP BY
 
   pool.query(query, values, (err, res) => {
     if (err) {
-      callback(err);
+      callback(err.stack);
     } else {
       callback(null, res.rows);
     }

@@ -147,3 +147,10 @@ CREATE INDEX idx_photos_rev ON reviews_photos (review_id);
 -- missing line 1 somehow
 
 INSERT INTO products values (1, 'Camo Onesie', 'Blend in to your crowd', 'The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.', 'Jackets', 140);
+
+/*
+SELECT
+    pg_size_pretty (
+        pg_database_size ('reviews')
+    );
+*/

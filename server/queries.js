@@ -67,7 +67,6 @@ GROUP BY
   var values = [params.product_id, params.count, params.count * params.page];
 
   pool.query(query, values, (err, res) => {
-    console.error(err);
     if (err) {
       callback(err);
     } else {

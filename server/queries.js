@@ -5,8 +5,8 @@ const pool = new Pool({
   user: 'derek',
   password: '',
   // host: 'localhost',
-  // host: 'ec2-18-118-107-137.us-east-2.compute.amazonaws.com',
-  host: '18.118.107.137',
+  host: 'ec2-18-118-107-137.us-east-2.compute.amazonaws.com',
+  // host: '18.118.107.137',
   database: 'reviews',
   port: 5432,
 })

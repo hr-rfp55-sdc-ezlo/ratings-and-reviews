@@ -42,7 +42,7 @@ router.get('/reviews/:product_id', (req, res) => {
 
 app.get('/reviews', (req, res) => {
    var params = {
-     product_id: req.query.product_id || 4,
+     product_id: req.query.product_id || 1000011,
      sort: req.query.sort || "helpfulness",
      count: req.query.count || 10,
      page: req.query.page || 0,
@@ -52,8 +52,8 @@ app.get('/reviews', (req, res) => {
 
     pg.getReviews(params, (err, data) => {
       if (err) {
-        console.log('Error getting reviews from db:' + err);
-        res.status(404).send(err);
+        console.log('Error getting reviews from db:' + err.stack);
+        res.status(404).send(err.stack);
       } else {
         console.log(data);
         res.status(200).json(data);

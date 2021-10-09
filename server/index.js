@@ -55,7 +55,7 @@ app.get('/reviews', (req, res) => {
         console.log('Error getting reviews from db:' + err.stack);
         res.status(404).send(err.stack);
       } else {
-        console.log(data);
+        console.log('data:', data);
         res.status(200).json(data);
       }
     });
@@ -87,7 +87,7 @@ app.get('/reviews/meta', (req, res) => {
         console.log('Error getting metadata from db:' + err);
         res.status(404).send(err);
       } else {
-        console.log(data);
+        console.log('data:', data);
         res.status(200).json(data);
       }
     });
@@ -178,7 +178,7 @@ app.post('/reviews', (req, res) => {
        console.log('Error posting reviews to db:' + err);
        res.status(404).send(err);
      } else {
-       console.log(data);
+       console.log('data:', data);
        res.status(200).json(data);
      }
    });

@@ -26,9 +26,9 @@ const getReviews = (params, callback) => {
   if (params.sort === 'helpfulness') {
     sort = "helpfulness";
   }
-  // if (params.sort === 'relevance') {
-  //   sort =
-  // }
+  if (params.sort === 'relevant') {
+    sort = "helpfulness";
+  }
   if (params.sort === 'newest') {
     sort = "date";
   }

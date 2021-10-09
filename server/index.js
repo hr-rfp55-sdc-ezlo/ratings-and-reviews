@@ -47,15 +47,15 @@ app.get('/reviews', (req, res) => {
      count: req.query.count || 10,
      page: req.query.page || 0,
     };
-    console.log('GET request received:', req.headers);
-    console.log('params:', params);
+    // console.log('GET request received:', req.headers);
+    // console.log('params:', params);
 
     pg.getReviews(params, (err, data) => {
       if (err) {
         console.log('Error getting reviews from db:' + err.stack);
         res.status(404).send(err.stack);
       } else {
-        console.log('data:', data);
+        // console.log('data:', data);
         res.status(200).json(data);
       }
     });
@@ -79,15 +79,15 @@ app.get('/reviews/meta', (req, res) => {
   var params = {
     product_id: req.query.product_id
     };
-    console.log('GET meta req recd:', req.query);
-    console.log('params:', params);
+    // console.log('GET meta req recd:', req.query);
+    // console.log('params:', params);
 
     pg.getMeta(params, (err, data) => {
       if (err) {
         console.log('Error getting metadata from db:' + err);
         res.status(404).send(err);
       } else {
-        console.log('data:', data);
+        // console.log('data:', data);
         res.status(200).json(data);
       }
     });
@@ -111,7 +111,7 @@ app.put('/reviews/:review_id/helpful', (req, res) => {
   var params = {
     review_id: req.query.review_id
   };
-  console.log('PUT helpful req recd:', req.query);
+  // console.log('PUT helpful req recd:', req.query);
 
   pg.markHelpful(params, (err, data) => {
     if (err) {
@@ -170,15 +170,15 @@ app.post('/reviews', (req, res) => {
     photos: req.query.photos,
     characteristics: req.query.characteristics
    };
-   console.log('POST request received:', req.query);
-   console.log('params:', params);
+  //  console.log('POST request received:', req.query);
+  //  console.log('params:', params);
 
    pg.postReview(params, (err, data) => {
      if (err) {
        console.log('Error posting reviews to db:' + err);
        res.status(404).send(err);
      } else {
-       console.log('data:', data);
+      //  console.log('data:', data);
        res.status(200).json(data);
      }
    });
@@ -206,7 +206,7 @@ app.put('/reviews/:review_id/report', (req, res) => {
   var params = {
     review_id: req.query.review_id
   };
-  console.log('PUT report req recd:', req.query);
+  // console.log('PUT report req recd:', req.query);
 
   pg.reportReview(params, (err, data) => {
     if (err) {
